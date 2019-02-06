@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 
@@ -10,7 +11,48 @@ import (
 	"github.com/globalsign/mgo/bson"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+)
+
+//logrus
+var logger = logrus.New()
+
+// Info top-level functions to wrap Logrus
+func Info(args ...interface{}) {
+	logger.Info(args...)
+}
+
+// Debug top-level functions to wrap Logrus
+func Debug(args ...interface{}) {
+	logger.Debug(args...)
+}
+
+//WithConn is with connect
+func WithConn(conn net.Conn) *logrus.Entry {
+	addr := "unknown"
+	if conn != nil {
+		addr = conn.RemoteAddr().String()
+	}
+	return logger.WithField("addr", addr)
+}
+
+//RequestFields is request
+func RequestFields(req *http.Request) logrus.Fields {
+	return logrus.Fields{"userAgent": req.UserAgent()}
+}
+
+//WithRequest is with request
+func WithRequest(req *http.Request) *logrus.Entry {
+	return logger.WithFields(RequestFields(req))
+}
+
+var (
+	con net.Conn
+)
+
+var (
+	req *http.Request
 )
 
 func main() {
@@ -42,6 +84,14 @@ func main() {
 	}
 
 	e := echo.New()
+
+	//logrus
+	//logger.Info("Some info. Earth is not flat")
+
+	WithConn(con).Info("Connected")
+	logger.WithFields(logrus.Fields{
+		"animal": "walrus",
+	}).Info("A walrus appears")
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
