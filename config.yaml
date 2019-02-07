@@ -1,4 +1,4 @@
-port: 
+port: 8082
 mongo:
   user: root
   pass: example
