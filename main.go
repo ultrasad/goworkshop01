@@ -3,6 +3,8 @@ package main
 import (
 	"net"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"strings"
 	"workshop01/db/mongo"
 	"workshop01/routers"
@@ -52,6 +54,12 @@ var (
 	req *http.Request
 )
 
+func proxy(w http.ResponseWriter, r *http.Request) {
+	u, _ := url.Parse("http://myip.ninja")
+	proxy := httputil.NewSingleHostReverseProxy(u)
+	proxy.ServeHTTP(w, r)
+}
+
 func main() {
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
@@ -61,6 +69,19 @@ func main() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetDefault("port", "8082")
 
+	/*
+		var (
+			buf    bytes.Buffer
+			logger = log.New(&buf, "logger: ", log.Lshortfile)
+		)
+
+		logger.Print("Hello, log file!")
+		fmt.Print(&buf)
+	*/
+
+	//http.HandleFunc("/", proxy)
+	//log.Fatal(http.ListenAndServe(":8082", nil))
+
 	e := echo.New()
 
 	//Start Mongo Connect
@@ -68,4 +89,5 @@ func main() {
 
 	// Start Router
 	routers.Init(e)
+
 }

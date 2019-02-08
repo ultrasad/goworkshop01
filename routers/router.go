@@ -37,5 +37,8 @@ func Init(e *echo.Echo) {
 	e.PUT("/todos/:id", controllers.Done)
 	e.DELETE("/todos/:id", controllers.Delete)
 
+	//GoRoutine
+	e.GET("/hello", controllers.CallHelloRoutine)
+
 	e.Logger.Fatal(e.Start(port))
 }
