@@ -3,3 +3,5 @@ mongo:
   user: root
   pass: example
   host: localhost:27017
+logger:
+  filename: logger.log
