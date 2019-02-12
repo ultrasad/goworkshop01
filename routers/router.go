@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 	"workshop01/controllers"
 	"workshop01/middlewares"
 
@@ -77,6 +78,7 @@ func Init(e *echo.Echo) {
 		log.SetOutput(f)
 	*/
 
+	//OK
 	//middlewares.Init()
 	//log.SetPrefix("prefix")
 	logger := log.New(os.Stderr, "", 0)
@@ -86,18 +88,12 @@ func Init(e *echo.Echo) {
 	e.Use(middleware.BodyDumpWithConfig(middleware.BodyDumpConfig{
 		Handler: func(c echo.Context, reqBody, resBody []byte) {
 
-			reqB := ""
+			reqB := "\"\""
 			if len(reqBody) > 0 {
 				reqB = string(reqBody)
 			}
 
-			logger.Printf(`{"id":"%s","req":%s,"res":%s}`, c.Response().Header().Get(echo.HeaderXRequestID), reqB, resBody)
-			// logger.Init must be called first to setup logger
-			//logger.Init("./log")
-			//logger.Info("Failed to find player! uid=%d plid=%d cmd=%s xxx=%d", 1234, 678942, "getplayer", 102020101)
-			//logger.Warn("Failed to parse protocol! uid=%d plid=%d cmd=%s", 1234, 678942, "getplayer")
-			//logger.Infof(`{"id":"%s","req":%s,"res":%s}`, c.Response().Header().Get(echo.HeaderXRequestID), reqB, resBody)
-			//fmt.Printf(`{"id":"%s","req":%s,"res":%s}`, c.Response().Header().Get(echo.HeaderXRequestID), reqB, resBody)
+			logger.Printf(`{"time": "%s", "message": "{}", "level": "info","data": {"id":"%s","req":%s,"res":%s}}`, time.Now().Format("2006-01-02T15:04:05Z"), c.Response().Header().Get(echo.HeaderXRequestID), reqB, resBody)
 		},
 	}))
 
@@ -108,11 +104,55 @@ func Init(e *echo.Echo) {
 		return false, nil
 	}))
 
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+	/*e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "method=${method}, uri=${uri}, status=${status}\n",
+	}))*/
+
+	//RFC3339local := "2006-01-02T15:04:05Z"
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: `{"time":"${time_custom}","id":"${id}","remote_ip":"${remote_ip}","host":"${host}",` +
+			`"method":"${method}","uri":"${uri}","status":${status}, "latency":${latency},` +
+			`"latency_human":"${latency_human}","bytes_in":${bytes_in},` +
+			`"bytes_out":${bytes_out}}` + "\r\n",
+		CustomTimeFormat: "2006-01-02T15:04:05Z",
+		Output:           &middlewares.Logs{Collection: "logs"},
 	}))
 
 	fmt.Printf("Starting...")
+
+	/*
+		url1, err := url.Parse("www.yahoo.com")
+		if err != nil {
+			e.Logger.Fatal(err)
+		}
+		targets := []*middleware.ProxyTarget{&middleware.ProxyTarget{URL: url1}}
+		e.Group("/myblog", middleware.ProxyWithConfig(middleware.ProxyConfig{
+			Balancer: &middleware.RobinBalancer{
+				Targets: targets,
+			},
+		}))
+	*/
+
+	/*
+		url1, err := url.Parse("http://localhost:1323")
+		if err != nil {
+			e.Logger.Fatal(err)
+		}
+		url2, err := url.Parse("http://localhost:1323")
+		if err != nil {
+			e.Logger.Fatal(err)
+		}
+		targets := []*middleware.ProxyTarget{
+			{
+				URL: url1,
+			},
+			{
+				URL: url2,
+			},
+		}
+
+		e.Group("/users", middleware.Proxy(middleware.NewRoundRobinBalancer(targets)))
+	*/
 
 	// CustomRequestID
 	/*
